@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Packages on count n fight</title>
+    <link>https://camille-s.github.io/tags/packages/</link>
+    <description>Recent content in Packages on count n fight</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 05 Aug 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camille-s.github.io/tags/packages/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>R package: camiller</title>
+      <link>https://camille-s.github.io/post/r-package-camiller/</link>
+      <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camille-s.github.io/post/r-package-camiller/</guid>
+      <description>I recently decided I had collected enough snippets and convenience functions in R that rather than pasting them in Rmarkdown documents scattered all over different projects, I should bite the bullet and build a package. I’d written a package once before for work—a collection of mostly wrapper functions for making profiles of ACS data with the acs package—and while it had one or two vignettes, it had pretty poor documentation and no tests.</description>
+    </item>
+    
+  </channel>
+</rss>

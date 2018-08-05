@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Words on count n fight</title>
+    <link>https://camille-s.github.io/tags/words/</link>
+    <description>Recent content in Words on count n fight</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 05 Aug 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://camille-s.github.io/tags/words/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Getting started</title>
+      <link>https://camille-s.github.io/post/getting-started/</link>
+      <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>https://camille-s.github.io/post/getting-started/</guid>
+      <description>I read a lot of articles and blog posts about data, I have a lot of thoughts about data, and I especially have a lot of questions about data. I have snippets of little projects that try to answer some of those questions. I also have a few opinions—data should be made accessible to general audiences, especially when it&amp;rsquo;s about them. Data can be a powerful tool for communities to understand and take care of themselves, but it can also be used to inflict harm and spread disinformation.</description>
+    </item>
+    
+  </channel>
+</rss>
