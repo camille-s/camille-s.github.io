@@ -122,6 +122,11 @@ body {
     text-rendering: optimizeLegibility;
 }
 
+code {
+  font-family: Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
 h1 {
     font-size: 30px;
     letter-spacing: -1px;
@@ -244,14 +249,18 @@ nav.main-nav a.cta {
 
 /*Accent color*/
 
-a, #title, #post-list a:hover, #title:hover {
+a, #title, #post-list {
     text-decoration: none;
-    color: #5badf0;
-    color: #5694f1;
+    color: #C83A8F;
 }
 
 p a {
-    color: #5694f1;
+    color: #C83A8F;
+}
+
+a:hover, #title:hover {
+  color: #AF3AD6;
+  text-decoration: underline;
 }
 
 
