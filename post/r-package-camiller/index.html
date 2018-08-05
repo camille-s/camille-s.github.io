@@ -79,8 +79,8 @@ library(camiller)
 library(showtext)</code></pre>
 <p>I often have to compose smaller geographies, such as census tracts or towns, into larger geographies, such as city neighborhoods or regions of towns, and then aggregate some data. It gets tedious, especially because those groups might not be mutually exclusive. Same goes for other groupings, like populations by age or education level. So I started working out an <code>add_grps</code> function that adds up subgroups and binds them all together into a data frame quickly.</p>
 <p>For instance, to calculate populations in households by their ratio to the federal poverty line, with data from the 2016 ACS:</p>
-<pre class="r"><code>poverty &lt;- get_acs(geography = &quot;county subdivision&quot;, table = &quot;C17002&quot;, year = 2016, 
-                   state = &quot;09&quot;, county = &quot;09&quot;) %&gt;%
+<pre class="r"><code>poverty &lt;- get_acs(geography = &quot;county subdivision&quot;, table = &quot;C17002&quot;, 
+                   year = 2016, state = &quot;09&quot;, county = &quot;09&quot;) %&gt;%
   camiller::town_names(NAME) %&gt;%
   rename(name = NAME) %&gt;%
   filter(name %in% c(&quot;New Haven&quot;, &quot;Hamden&quot;, &quot;West Haven&quot;, &quot;East Haven&quot;)) %&gt;%
@@ -90,7 +90,7 @@ library(showtext)</code></pre>
   add_grps(list(total = &quot;Total&quot;, 
                 poverty = c(&quot;Under .50&quot;, &quot;.50 to .99&quot;), 
                 low_income = c(&quot;Under .50&quot;, &quot;.50 to .99&quot;, &quot;1.00 to 1.24&quot;, 
-                               &quot;1.25 to 1.49&quot;, &quot;1.50 to 1.84&quot;, &quot;1.85 to 1.99&quot;)), 
+                          &quot;1.25 to 1.49&quot;, &quot;1.50 to 1.84&quot;, &quot;1.85 to 1.99&quot;)), 
            group = label)
 
 poverty</code></pre>
