@@ -1,0 +1,87 @@
+---
+title: 'R package: camiller'
+author: Camille
+date: '2018-08-05'
+slug: r-package-camiller
+categories:
+  - package
+tags:
+  - R
+  - ggplot2
+  - packages
+output: blogdown::html_page
+---
+
+I recently decided I had collected enough snippets and convenience functions in R that rather than pasting them in Rmarkdown documents scattered all over different projects, I should bite the bullet and build a package. I'd written a package once before for work—a collection of mostly wrapper functions for making profiles of ACS data with the [`acs`](https://cran.r-project.org/web/packages/acs/index.html) package—and while it had one or two vignettes, it had pretty poor documentation and no tests.
+
+This time around, I decided to be more intentional and build something that might last. Alongside this, I was also building a bunch of code for working with Census data, as well as other open government data on unemployment, job counts, wages, etc. I figured I'd split these two concerns into one package of more specific tasks for work, [called `cwi`](https://github.com/CT-Data-Haven/cwi), and one package of broader, how-do-I-tidyeval tasks for myself. I also figured I'd take a deep dive into R development by not only testing with `testthat`, but also building documentation sites with `pkgdown` and setting up Travis-CI to build and deploy everything.
+
+So that's [`camiller`](https://github.com/camille-s/camiller). It's a work in progress, but there are some things I'm happy with.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE,
+	fig.showtext = TRUE
+)
+```
+
+```{r}
+library(tidyverse)
+library(tidycensus)
+library(camiller)
+library(showtext)
+```
+
+I often have to compose smaller geographies, such as census tracts or towns, into larger geographies, such as city neighborhoods or regions of towns, and then aggregate some data. It gets tedious, especially because those groups might not be mutually exclusive. Same goes for other groupings, like populations by age or education level. So I started working out an `add_grps` function that adds up subgroups and binds them all together into a data frame quickly.
+
+For instance, to calculate populations in households by their ratio to the federal poverty line, with data from the 2016 ACS:
+
+```{r}
+poverty <- get_acs(geography = "county subdivision", table = "C17002", year = 2016, state = "09", county = "09") %>%
+  camiller::town_names(NAME) %>%
+  rename(name = NAME) %>%
+  filter(name %in% c("New Haven", "Hamden", "West Haven", "East Haven")) %>%
+  cwi::label_acs() %>%
+  mutate(label = str_remove(label, "Total!!")) %>%
+  group_by(name) %>%
+  add_grps(list(total = "Total", 
+                poverty = c("Under .50", ".50 to .99"), 
+                low_income = c("Under .50", ".50 to .99", "1.00 to 1.24", "1.25 to 1.49", "1.50 to 1.84", "1.85 to 1.99")), 
+           group = label)
+
+poverty
+```
+
+But just numbers don't do a whole lot—New Haven is much bigger than its suburbs, so it's far more useful to calculate rates. In this case, there are three groups—total population for whom poverty status is determined, population in households with incomes below the poverty line, and population in households with incomes less than 2 times the poverty line. But I want to divide the second two of these groups over the first. And reshaping the data for that is awkward, let alone the fact that I might have to do it for 20 tables in a day.
+
+So I wrote `calc_shares`:
+
+```{r}
+poverty_rates <- poverty %>%
+  calc_shares(group = label, denom = "total")
+
+poverty_rates
+```
+
+Cool. Now I can make some actual comparisons. I can use the `ggplot2` theme I put together for this package to make it a little cleaner than the defaults.
+
+```{r}
+font_add_google("Archivo Narrow", "archivo")
+showtext_auto()
+
+poverty_rates %>%
+  ungroup() %>%
+  filter(!is.na(share)) %>%
+  mutate(name = as.factor(name) %>% fct_reorder2(label, share)) %>%
+  mutate(label = fct_relabel(label, function(x) str_replace_all(x, "_", "-") %>% camiller::cap_first())) %>%
+  ggplot(aes(x = name, y = share)) +
+    geom_col(fill = "skyblue3", width = 0.8, alpha = 0.9) +
+    scale_y_continuous(labels = scales::percent) +
+    facet_wrap(~ label) +
+    theme_din(base_family = "archivo") +
+    labs(x = NULL, y = NULL, title = "Poverty and low-income rates by town", subtitle = "New Haven and Inner Ring suburbs, 2016", caption = "Source: US Census Bureau 2016 5-year estimates")
+```
+
+Pretty cute! There are a few more things going on in `camiller`, including a `themed_label` function that wraps around [`cowplot::draw_label()`](https://cran.r-project.org/web/packages/cowplot) to make labels that fit the aesthetics of a theme to tack onto a grid of `ggplot`s.
