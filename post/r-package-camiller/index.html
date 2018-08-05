@@ -6,7 +6,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
 		<meta name="author" content="Camille">
-		<meta name="description" content="Site Description">
+		
 		<meta name="generator" content="Hugo 0.46" />
 		<title>R package: camiller &middot; count n fight</title>
 		<link rel="shortcut icon" href="https://camille-s.github.io/images/favicon.ico">
@@ -50,7 +50,7 @@
                     </h1>
                     <h2 class="headline">
                     Aug 5, 2018
-                    · 190 words
+                    · 827 words
                       <span class="tags">
                       
                       
@@ -71,8 +71,82 @@
                 
                 <section id="post-body">
                     <p>I recently decided I had collected enough snippets and convenience functions in R that rather than pasting them in Rmarkdown documents scattered all over different projects, I should bite the bullet and build a package. I’d written a package once before for work—a collection of mostly wrapper functions for making profiles of ACS data with the <a href="https://cran.r-project.org/web/packages/acs/index.html"><code>acs</code></a> package—and while it had one or two vignettes, it had pretty poor documentation and no tests.</p>
-<p>This time around, I decided to be more intentional and build something that might last. Alongside this, I was also building a bunch of code for working with Census data, as well as other open government data on unemployment, job counts, wages, etc. I figured I’d split these two concerns into one package of more specific tasks for work and one package of broader, how-do-I-tidyeval tasks for myself. I also figured I’d take a deep dive into R development by not only testing with <code>testthat</code>, but also building documentation sites with <code>pkgdown</code> and setting up Travis-CI to build and deploy everything.</p>
+<p>This time around, I decided to be more intentional and build something that might last. Alongside this, I was also building a bunch of code for working with Census data, as well as other open government data on unemployment, job counts, wages, etc. I figured I’d split these two concerns into one package of more specific tasks for work, <a href="https://github.com/CT-Data-Haven/cwi">called <code>cwi</code></a>, and one package of broader, how-do-I-tidyeval tasks for myself. I also figured I’d take a deep dive into R development by not only testing with <code>testthat</code>, but also building documentation sites with <code>pkgdown</code> and setting up Travis-CI to build and deploy everything.</p>
 <p>So that’s <a href="https://github.com/camille-s/camiller"><code>camiller</code></a>. It’s a work in progress, but there are some things I’m happy with.</p>
+<pre class="r"><code>library(tidyverse)
+library(tidycensus)
+library(camiller)
+library(showtext)</code></pre>
+<p>I often have to compose smaller geographies, such as census tracts or towns, into larger geographies, such as city neighborhoods or regions of towns, and then aggregate some data. It gets tedious, especially because those groups might not be mutually exclusive. Same goes for other groupings, like populations by age or education level. So I started working out an <code>add_grps</code> function that adds up subgroups and binds them all together into a data frame quickly.</p>
+<p>For instance, to calculate populations in households by their ratio to the federal poverty line, with data from the 2016 ACS:</p>
+<pre class="r"><code>poverty &lt;- get_acs(geography = &quot;county subdivision&quot;, table = &quot;C17002&quot;, year = 2016, state = &quot;09&quot;, county = &quot;09&quot;) %&gt;%
+  camiller::town_names(NAME) %&gt;%
+  rename(name = NAME) %&gt;%
+  filter(name %in% c(&quot;New Haven&quot;, &quot;Hamden&quot;, &quot;West Haven&quot;, &quot;East Haven&quot;)) %&gt;%
+  cwi::label_acs() %&gt;%
+  mutate(label = str_remove(label, &quot;Total!!&quot;)) %&gt;%
+  group_by(name) %&gt;%
+  add_grps(list(total = &quot;Total&quot;, 
+                poverty = c(&quot;Under .50&quot;, &quot;.50 to .99&quot;), 
+                low_income = c(&quot;Under .50&quot;, &quot;.50 to .99&quot;, &quot;1.00 to 1.24&quot;, &quot;1.25 to 1.49&quot;, &quot;1.50 to 1.84&quot;, &quot;1.85 to 1.99&quot;)), 
+           group = label)
+
+poverty</code></pre>
+<pre><code>## # A tibble: 12 x 3
+## # Groups:   name [4]
+##    name       label      estimate
+##    &lt;chr&gt;      &lt;fct&gt;         &lt;dbl&gt;
+##  1 East Haven total         28739
+##  2 East Haven poverty        2630
+##  3 East Haven low_income     6253
+##  4 Hamden     total         56196
+##  5 Hamden     poverty        4724
+##  6 Hamden     low_income    10973
+##  7 New Haven  total        121847
+##  8 New Haven  poverty       31848
+##  9 New Haven  low_income    59454
+## 10 West Haven total         51905
+## 11 West Haven poverty        7990
+## 12 West Haven low_income    18400</code></pre>
+<p>But just numbers don’t do a whole lot—New Haven is much bigger than its suburbs, so it’s far more useful to calculate rates. In this case, there are three groups—total population for whom poverty status is determined, population in households with incomes below the poverty line, and population in households with incomes less than 2 times the poverty line. But I want to divide the second two of these groups over the first. And reshaping the data for that is awkward, let alone the fact that I might have to do it for 20 tables in a day.</p>
+<p>So I wrote <code>calc_shares</code>:</p>
+<pre class="r"><code>poverty_rates &lt;- poverty %&gt;%
+  calc_shares(group = label, denom = &quot;total&quot;)
+
+poverty_rates</code></pre>
+<pre><code>## # A tibble: 12 x 4
+## # Groups:   name [4]
+##    name       label      estimate  share
+##    &lt;chr&gt;      &lt;fct&gt;         &lt;dbl&gt;  &lt;dbl&gt;
+##  1 East Haven total         28739 NA    
+##  2 East Haven poverty        2630  0.092
+##  3 East Haven low_income     6253  0.218
+##  4 Hamden     total         56196 NA    
+##  5 Hamden     poverty        4724  0.084
+##  6 Hamden     low_income    10973  0.195
+##  7 New Haven  total        121847 NA    
+##  8 New Haven  poverty       31848  0.261
+##  9 New Haven  low_income    59454  0.488
+## 10 West Haven total         51905 NA    
+## 11 West Haven poverty        7990  0.154
+## 12 West Haven low_income    18400  0.354</code></pre>
+<p>Cool. Now I can make some actual comparisons. I can use the <code>ggplot2</code> theme I put together for this package to make it a little cleaner than the defaults.</p>
+<pre class="r"><code>font_add_google(&quot;Archivo Narrow&quot;, &quot;archivo&quot;)
+showtext_auto()
+
+poverty_rates %&gt;%
+  ungroup() %&gt;%
+  filter(!is.na(share)) %&gt;%
+  mutate(name = as.factor(name) %&gt;% fct_reorder2(label, share)) %&gt;%
+  mutate(label = fct_relabel(label, function(x) str_replace_all(x, &quot;_&quot;, &quot;-&quot;) %&gt;% camiller::cap_first())) %&gt;%
+  ggplot(aes(x = name, y = share)) +
+    geom_col(fill = &quot;skyblue3&quot;, width = 0.8, alpha = 0.9) +
+    scale_y_continuous(labels = scales::percent) +
+    facet_wrap(~ label) +
+    theme_din(base_family = &quot;archivo&quot;) +
+    labs(x = NULL, y = NULL, title = &quot;Poverty and low-income rates by town&quot;, subtitle = &quot;New Haven and Inner Ring suburbs, 2016&quot;, caption = &quot;Source: US Census Bureau 2016 5-year estimates&quot;)</code></pre>
+<p><img src="/post/2018-08-05-r-package-camiller_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Pretty cute! There are a few more things going on in <code>camiller</code>, including a <code>themed_label</code> function that wraps around <a href="https://cran.r-project.org/web/packages/cowplot"><code>cowplot::draw_label()</code></a> to make labels that fit the aesthetics of a theme to tack onto a grid of <code>ggplot</code>s.</p>
 
                 </section>
             </article>
