@@ -2,48 +2,48 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on count n fight</title>
-    <link>https://camille-s.github.io/tags/</link>
+    <link>/tags/</link>
     <description>Recent content in Tags on count n fight</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Sun, 05 Aug 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://camille-s.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Ggplot2</title>
-      <link>https://camille-s.github.io/tags/ggplot2/</link>
+      <link>/tags/ggplot2/</link>
       <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://camille-s.github.io/tags/ggplot2/</guid>
+      <guid>/tags/ggplot2/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Packages</title>
-      <link>https://camille-s.github.io/tags/packages/</link>
+      <link>/tags/packages/</link>
       <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://camille-s.github.io/tags/packages/</guid>
+      <guid>/tags/packages/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R</title>
-      <link>https://camille-s.github.io/tags/r/</link>
+      <link>/tags/r/</link>
       <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://camille-s.github.io/tags/r/</guid>
+      <guid>/tags/r/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Words</title>
-      <link>https://camille-s.github.io/tags/words/</link>
+      <link>/tags/words/</link>
       <pubDate>Sun, 05 Aug 2018 00:00:00 +0000</pubDate>
       
-      <guid>https://camille-s.github.io/tags/words/</guid>
+      <guid>/tags/words/</guid>
       <description></description>
     </item>
     
